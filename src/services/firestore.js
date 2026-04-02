@@ -11,19 +11,27 @@ import {
   orderBy,
   onSnapshot
 } from 'firebase/firestore';
-import { db } from './firebase';
+import { db, isFirebaseAvailable } from './firebase';
 
-// Products Collection
-export const productsCollection = collection(db, 'products');
+// Collections helper
+const getCollection = (collectionName) => {
+  if (!isFirebaseAvailable || !db) {
+    return null;
+  }
+  return collection(db, collectionName);
+};
 
-// Orders Collection
-export const ordersCollection = collection(db, 'orders');
-
-// Users Collection
-export const usersCollection = collection(db, 'users');
+export const productsCollection = getCollection('products');
+export const ordersCollection = getCollection('orders');
+export const usersCollection = getCollection('users');
 
 // Product CRUD Operations
 export const getProducts = async () => {
+  if (!isFirebaseAvailable || !productsCollection) {
+    console.warn('Firebase unavailable: getProducts returning empty array');
+    return [];
+  }
+
   try {
     const querySnapshot = await getDocs(productsCollection);
     return querySnapshot.docs.map(doc => ({
@@ -37,6 +45,11 @@ export const getProducts = async () => {
 };
 
 export const getProductById = async (productId) => {
+  if (!isFirebaseAvailable || !db) {
+    console.warn('Firebase unavailable: getProductById returning null');
+    return null;
+  }
+
   try {
     const docRef = doc(db, 'products', productId);
     const docSnap = await getDoc(docRef);
@@ -52,6 +65,11 @@ export const getProductById = async (productId) => {
 };
 
 export const addProduct = async (productData) => {
+  if (!isFirebaseAvailable || !productsCollection) {
+    console.warn('Firebase unavailable: addProduct cannot create product');
+    throw new Error('Firebase unavailable');
+  }
+
   try {
     const docRef = await addDoc(productsCollection, {
       ...productData,
@@ -66,6 +84,11 @@ export const addProduct = async (productData) => {
 };
 
 export const updateProduct = async (productId, productData) => {
+  if (!isFirebaseAvailable || !db) {
+    console.warn('Firebase unavailable: updateProduct cannot update product');
+    throw new Error('Firebase unavailable');
+  }
+
   try {
     const docRef = doc(db, 'products', productId);
     await updateDoc(docRef, {
@@ -79,6 +102,11 @@ export const updateProduct = async (productId, productData) => {
 };
 
 export const deleteProduct = async (productId) => {
+  if (!isFirebaseAvailable || !db) {
+    console.warn('Firebase unavailable: deleteProduct cannot delete product');
+    throw new Error('Firebase unavailable');
+  }
+
   try {
     await deleteDoc(doc(db, 'products', productId));
   } catch (error) {
@@ -89,6 +117,11 @@ export const deleteProduct = async (productId) => {
 
 // Order CRUD Operations
 export const createOrder = async (orderData) => {
+  if (!isFirebaseAvailable || !ordersCollection) {
+    console.warn('Firebase unavailable: createOrder cannot create order');
+    throw new Error('Firebase unavailable');
+  }
+
   try {
     const docRef = await addDoc(ordersCollection, {
       ...orderData,
@@ -103,6 +136,11 @@ export const createOrder = async (orderData) => {
 };
 
 export const getUserOrders = async (userId) => {
+  if (!isFirebaseAvailable || !ordersCollection) {
+    console.warn('Firebase unavailable: getUserOrders returning empty array');
+    return [];
+  }
+
   try {
     const q = query(
       ordersCollection,
@@ -121,6 +159,11 @@ export const getUserOrders = async (userId) => {
 };
 
 export const getOrderById = async (orderId) => {
+  if (!isFirebaseAvailable || !db) {
+    console.warn('Firebase unavailable: getOrderById returning null');
+    return null;
+  }
+
   try {
     const docRef = doc(db, 'orders', orderId);
     const docSnap = await getDoc(docRef);
@@ -136,6 +179,11 @@ export const getOrderById = async (orderId) => {
 };
 
 export const updateOrderStatus = async (orderId, status) => {
+  if (!isFirebaseAvailable || !db) {
+    console.warn('Firebase unavailable: updateOrderStatus cannot update status');
+    throw new Error('Firebase unavailable');
+  }
+
   try {
     const docRef = doc(db, 'orders', orderId);
     await updateDoc(docRef, {
@@ -150,6 +198,11 @@ export const updateOrderStatus = async (orderId, status) => {
 
 // User Profile Operations
 export const createUserProfile = async (userId, userData) => {
+  if (!isFirebaseAvailable || !usersCollection) {
+    console.warn('Firebase unavailable: createUserProfile cannot create profile');
+    throw new Error('Firebase unavailable');
+  }
+
   try {
     await addDoc(usersCollection, {
       uid: userId,
@@ -163,6 +216,11 @@ export const createUserProfile = async (userId, userData) => {
 };
 
 export const getUserProfile = async (userId) => {
+  if (!isFirebaseAvailable || !usersCollection) {
+    console.warn('Firebase unavailable: getUserProfile returning null');
+    return null;
+  }
+
   try {
     const q = query(usersCollection, where('uid', '==', userId));
     const querySnapshot = await getDocs(q);
@@ -178,6 +236,11 @@ export const getUserProfile = async (userId) => {
 };
 
 export const updateUserProfile = async (userId, userData) => {
+  if (!isFirebaseAvailable || !usersCollection || !db) {
+    console.warn('Firebase unavailable: updateUserProfile cannot update profile');
+    throw new Error('Firebase unavailable');
+  }
+
   try {
     const q = query(usersCollection, where('uid', '==', userId));
     const querySnapshot = await getDocs(q);
@@ -196,6 +259,11 @@ export const updateUserProfile = async (userId, userData) => {
 
 // Real-time listeners
 export const subscribeToProducts = (callback) => {
+  if (!isFirebaseAvailable || !productsCollection) {
+    console.warn('Firebase unavailable: subscribeToProducts no-op');
+    return () => {};
+  }
+
   return onSnapshot(productsCollection, (querySnapshot) => {
     const products = querySnapshot.docs.map(doc => ({
       id: doc.id,
@@ -206,6 +274,11 @@ export const subscribeToProducts = (callback) => {
 };
 
 export const subscribeToUserOrders = (userId, callback) => {
+  if (!isFirebaseAvailable || !ordersCollection) {
+    console.warn('Firebase unavailable: subscribeToUserOrders no-op');
+    return () => {};
+  }
+
   const q = query(
     ordersCollection,
     where('userId', '==', userId),

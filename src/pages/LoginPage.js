@@ -26,7 +26,8 @@ const LoginPage = () => {
       await signInWithFacebook();
       navigate('/');
     } catch (error) {
-      setError('Facebook sign in failed. Please try again.');
+      const message = error?.message || 'Facebook sign in failed. Please try again.';
+      setError(`Facebook sign in failed: ${message}`);
     }
   };
 
@@ -41,7 +42,9 @@ const LoginPage = () => {
       }
       navigate('/');
     } catch (error) {
-      setError(isSignUp ? 'Sign up failed. Please try again.' : 'Invalid email or password.');
+      const message = error?.message || 'Unknown auth error';
+      const code = error?.code ? ` (${error.code})` : '';
+      setError(isSignUp ? `Sign up failed${code}: ${message}` : `Sign in failed${code}: ${message}`);
     }
   };
 
