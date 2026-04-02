@@ -6,6 +6,7 @@ import {
   deleteProduct,
   subscribeToProducts
 } from '../services/firestore';
+import { initialProducts } from '../data';
 import toast from 'react-hot-toast';
 
 const AdminPage = () => {
@@ -95,6 +96,20 @@ const AdminPage = () => {
     }
   };
 
+  const handleSeedProducts = async () => {
+    if (!window.confirm('This will add initial products to the database. Continue?')) return;
+
+    try {
+      for (const product of initialProducts) {
+        await addProduct(product);
+      }
+      toast.success('Initial products seeded successfully!');
+    } catch (error) {
+      console.error('Error seeding products:', error);
+      toast.error('Failed to seed products. Please try again.');
+    }
+  };
+
   const resetForm = () => {
     setEditingProduct(null);
     setShowAddForm(false);
@@ -113,12 +128,20 @@ const AdminPage = () => {
     <div className="p-8">
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-3xl font-bold">Admin Panel - Product Management</h1>
-        <button
-          onClick={() => setShowAddForm(true)}
-          className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
-        >
-          Add New Product
-        </button>
+        <div className="flex gap-2">
+          <button
+            onClick={handleSeedProducts}
+            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+          >
+            Seed Initial Products
+          </button>
+          <button
+            onClick={() => setShowAddForm(true)}
+            className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
+          >
+            Add New Product
+          </button>
+        </div>
       </div>
 
       {/* Add/Edit Form */}
