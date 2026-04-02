@@ -1,38 +1,53 @@
-import React, { useState } from 'react';
-import { initialProducts } from './data';
-import ProductCard from './components/ProductCard';
+import React, { useState, useEffect } from 'react';
+import ProductCard from '../components/ProductCard';
+import { subscribeToProducts } from '../services/firestore';
 
 function Home() {
+  const [products, setProducts] = useState([]);
   const [category, setCategory] = useState('All');
   const [searchTerm, setSearchTerm] = useState('');
+  const [loading, setLoading] = useState(true);
 
-  // 1. Logic to Filter Products 🧠
-  const filteredProducts = initialProducts.filter((product) => {
+  useEffect(() => {
+    const unsubscribe = subscribeToProducts((productsData) => {
+      setProducts(productsData);
+      setLoading(false);
+    });
+
+    return unsubscribe;
+  }, []);
+
+  const categories = ['All', ...Array.from(new Set(products.map(p => p.category))).sort()];
+
+  const filteredProducts = products.filter((product) => {
     const matchesCategory = category === 'All' || product.category === category;
     const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase());
     return matchesCategory && matchesSearch;
   });
 
-  const categories = ['All', 'Vegetables', 'Fruits', 'Cakes', 'Biscuits'];
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-green-600"></div>
+      </div>
+    );
+  }
 
   return (
-    <main style={{ padding: '2rem' }}>
-      <div style={filterContainer}>
-        {/* Search Bar */}
-        <input 
-          type="text" 
-          placeholder="Search products... 🔍" 
+    <main className="p-8">
+      <div className="mb-8 grid gap-4 md:grid-cols-2 items-end">
+        <input
+          value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          style={searchInput}
+          placeholder="Search products..."
+          className="w-full border border-gray-300 rounded-xl px-4 py-2 focus:outline-none focus:ring-2 focus:ring-green-500"
         />
-        
-        {/* Category Buttons */}
-        <div style={{ marginTop: '15px' }}>
-          {categories.map(cat => (
-            <button 
-              key={cat} 
+        <div className="flex flex-wrap gap-2">
+          {categories.map((cat) => (
+            <button
+              key={cat}
               onClick={() => setCategory(cat)}
-              style={category === cat ? activeBtn : inactiveBtn}
+              className={`px-4 py-2 rounded-full transition ${category === cat ? 'bg-green-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-green-100'}`}
             >
               {cat}
             </button>
@@ -40,20 +55,18 @@ function Home() {
         </div>
       </div>
 
-      <h1>{category} Items 🥦</h1>
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '20px' }}>
-        {filteredProducts.map(product => (
-          <ProductCard key={product.id} product={product} />
-        ))}
-      </div>
+      <h1 className="text-3xl font-bold mb-4">{category} Items</h1>
+      {filteredProducts.length === 0 ? (
+        <p className="text-gray-500">No products found.</p>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+          {filteredProducts.map((product) => (
+            <ProductCard key={product.id} product={product} />
+          ))}
+        </div>
+      )}
     </main>
   );
 }
-
-// Styles
-const filterContainer = { marginBottom: '30px', textAlign: 'center' };
-const searchInput = { padding: '10px', width: '300px', borderRadius: '20px', border: '1px solid #ddd' };
-const inactiveBtn = { margin: '5px', padding: '8px 15px', cursor: 'pointer', borderRadius: '15px', border: '1px solid #2ecc71', background: 'white' };
-const activeBtn = { ...inactiveBtn, background: '#2ecc71', color: 'white' };
 
 export default Home;

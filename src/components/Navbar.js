@@ -43,17 +43,20 @@ const Navbar = () => {
         {/* User Authentication Section */}
         {user ? (
           <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2">
+            {user.photoURL ? (
+              <img
+                src={user.photoURL}
+                alt={user.displayName || 'User'}
+                className="w-9 h-9 rounded-full object-cover"
+                title={user.displayName || user.email}
+              />
+            ) : (
               <User size={20} />
-              <span className="text-sm hidden sm:block">
-                {user.displayName || user.email?.split('@')[0]}
-              </span>
-              {isAdmin && (
-                <span className="bg-yellow-500 text-black text-xs px-2 py-1 rounded font-bold">
-                  ADMIN
-                </span>
-              )}
-            </div>
+            )}
+            <span className="text-sm hidden sm:block">{user.displayName || user.email?.split('@')[0]}</span>
+            {isAdmin && (
+              <span className="bg-yellow-500 text-black text-xs px-2 py-1 rounded font-bold">ADMIN</span>
+            )}
             {isAdmin && (
               <Link
                 to="/admin"
