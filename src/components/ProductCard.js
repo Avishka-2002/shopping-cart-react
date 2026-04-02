@@ -10,7 +10,7 @@ const ProductCard = ({ product }) => {
         <h3 className="font-bold text-lg">{product.name}</h3>
         <p className="text-gray-500 text-sm mb-4">{product.description}</p>
         <div className="flex justify-between items-center">
-          <span className="text-green-700 font-bold">${product.price.toFixed(2)}</span>
+          <span className="text-green-700 font-bold">Rs {product.price.toLocaleString()}</span>
           <button onClick={() => addToCart(product)} className="bg-green-600 text-white px-3 py-1 rounded-lg hover:bg-green-700">Add</button>
         </div>
       </div>
