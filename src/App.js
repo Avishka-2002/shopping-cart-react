@@ -1,39 +1,31 @@
-import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
-import Navbar from './components/Navbar';
-import ProductCard from './components/ProductCard';
-import CartPage from './pages/CartPage';
-import { initialProducts } from './data';
-
-function Home() {
-  return (
-    <main style={{ padding: '2rem' }}>
-      <h1>Our Fresh Products 🥦</h1>
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '20px' }}>
-        {initialProducts.map(product => (
-          <ProductCard key={product.id} product={product} />
-        ))}
-      </div>
-    </main>
-  );
-}
+import React, { useState, useEffect } from 'react';
+import { auth } from './services/firebase';
+import { onAuthStateChanged, signOut } from 'firebase/auth';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+// ... other imports (Navbar, ProductCard, CartPage, etc.)
 
 function App() {
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    // This "Listener" detects if a user logs in or out
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
+    });
+    return () => unsubscribe();
+  }, []);
+
+  const handleLogout = () => signOut(auth);
+
   return (
     <Router>
-      <Navbar />
-      {/* Navigation Link Example */}
-      <div style={{ padding: '10px 2rem', background: '#f9f9f9' }}>
-        <Link to="/" style={{ marginRight: '15px' }}>Home</Link>
-        <Link to="/cart">Go to Cart 🛒</Link>
-      </div>
-
+      <Navbar user={user} logout={handleLogout} />
       <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/cart" element={<CartPage />} />
+        {/* If not logged in, force them to Login Page */}
+        <Route path="/" element={user ? <Home /> : <Navigate to="/login" />} />
+        <Route path="/cart" element={user ? <CartPage /> : <Navigate to="/login" />} />
+        <Route path="/login" element={!user ? <LoginPage /> : <Navigate to="/" />} />
       </Routes>
     </Router>
   );
 }
-
-export default App;
