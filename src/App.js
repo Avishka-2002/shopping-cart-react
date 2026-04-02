@@ -1,23 +1,21 @@
-// src/App.js
 import React from 'react';
-import { products } from './data';
-import { CartProvider } from './CartContext';
-import Product from './components/Product';
-import Cart from './components/Cart';
+import Navbar from './components/Navbar';
+import ProductCard from './components/ProductCard';
+import { initialProducts } from './data';
 
 function App() {
   return (
-    <CartProvider>
-      <div style={{ display: 'flex', justifyContent: 'space-between', padding: '20px' }}>
-        <div>
-          <h1>Supermarket 🥬</h1>
-          <div style={{ display: 'flex', flexWrap: 'wrap' }}>
-            {products.map(p => <Product key={p.id} product={p} />)}
-          </div>
+    <div>
+      <Navbar />
+      <main style={{ padding: '2rem' }}>
+        <h1>Our Products 🥦</h1>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '20px' }}>
+          {initialProducts.map(product => (
+            <ProductCard key={product.id} product={product} />
+          ))}
         </div>
-        <Cart />
-      </div>
-    </CartProvider>
+      </main>
+    </div>
   );
 }
 
