@@ -9,7 +9,11 @@ import {
 import { getFirestore } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
 
-// 1. Configuration using Environment Variables
+/**
+ * 1. Configuration object
+ * These values are pulled from your .env file for security.
+ * Ensure your .env file contains keys starting with REACT_APP_
+ */
 const firebaseConfig = {
   apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
   authDomain: process.env.REACT_APP_FIREBASE_AUTH_DOMAIN,
@@ -19,23 +23,23 @@ const firebaseConfig = {
   appId: process.env.REACT_APP_FIREBASE_APP_ID
 };
 
-// 2. Validation Check
-const isValidConfig = firebaseConfig.apiKey && !firebaseConfig.apiKey.includes('your_');
-
+// 2. Variables for Firebase services
 let app;
 let auth;
 let db;
 let storage;
 let isFirebaseAvailable = false;
 
-// 3. Providers Setup
+// 3. Authentication Providers Setup
 const googleProvider = new GoogleAuthProvider();
 const facebookProvider = new FacebookAuthProvider();
 
-// Customizing Providers (Optional but professional)
+// Professional Touch: Force Google to ask which account to use
 googleProvider.setCustomParameters({ prompt: 'select_account' });
 
-// 4. Initialization Logic
+// 4. Guard: Check if API Key exists before initializing
+const isValidConfig = firebaseConfig.apiKey && firebaseConfig.apiKey !== "undefined";
+
 if (isValidConfig) {
   try {
     app = initializeApp(firebaseConfig);
@@ -43,16 +47,17 @@ if (isValidConfig) {
     db = getFirestore(app);
     storage = getStorage(app);
     
-    // Set Persistence: Keeps the user logged in even after closing the tab 
+    // browserLocalPersistence: Keeps user logged in even after closing the tab
     setPersistence(auth, browserLocalPersistence);
     
     isFirebaseAvailable = true;
-    console.info('✅ Firebase initialized successfully.');
+    console.info('✅ FreshShop Firebase initialized successfully.');
   } catch (error) {
     console.error('❌ Firebase initialization failed:', error.message);
   }
 } else {
-  console.warn('⚠️ Firebase config missing. Authentication and Database features will be disabled.');
+  console.warn('⚠️ Firebase API Key missing. Authentication & Firestore are disabled.');
 }
 
+// 5. Export everything for use in your Login and Admin pages
 export { auth, googleProvider, facebookProvider, db, storage, isFirebaseAvailable };
