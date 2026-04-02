@@ -40,9 +40,14 @@ const CartPage = () => {
               <div key={item.id} className="bg-white rounded-lg shadow-md p-6">
                 <div className="flex items-center gap-4">
                   <img
-                    src={item.image}
-                    className="w-20 h-20 rounded-lg object-cover"
+                    src={item.image.replace(/\.(jpg|jpeg|png)(\?.*)?$/i, '.webp')}
                     alt={item.name}
+                    loading="lazy"
+                    onError={(e) => {
+                      e.target.onerror = null;
+                      e.target.src = item.image;
+                    }}
+                    className="w-20 h-20 rounded-lg object-cover"
                   />
                   <div className="flex-grow">
                     <h3 className="font-semibold text-lg">{item.name}</h3>

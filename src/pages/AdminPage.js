@@ -234,7 +234,16 @@ const AdminPage = () => {
                 <tr key={product.id}>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center">
-                      <img className="h-10 w-10 rounded object-cover mr-3" src={product.image} alt={product.name} />
+                      <img
+                    className="h-10 w-10 rounded object-cover mr-3"
+                    src={product.image.replace(/\.(jpg|jpeg|png)(\?.*)?$/i, '.webp')}
+                    alt={product.name}
+                    loading="lazy"
+                    onError={(e) => {
+                      e.target.onerror = null;
+                      e.target.src = product.image;
+                    }}
+                  />
                       <div>
                         <div className="text-sm font-medium text-gray-900">{product.name}</div>
                         <div className="text-sm text-gray-500 truncate max-w-xs">{product.description}</div>
